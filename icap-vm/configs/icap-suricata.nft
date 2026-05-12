@@ -1,0 +1,33 @@
+#!/usr/sbin/nft -f
+# Path-B v5.12 — optional local firewall for the ICAP/Suricata VM.
+# Platzhalter are vom Installer ersetzt.
+
+table inet pathb_icap_vm {
+    chain input {
+        type filter hook input priority 0;
+        policy drop;
+
+        iifname "lo" accept
+        ct state invalid drop
+        ct state established,related accept
+        ip protocol icmp accept
+
+        # Management SSH
+        iifname "__MGMT_IF__" tcp dport 22 accept
+
+        # ICAP and health access only from proxy/management networks
+        ip saddr __ALLOWED_CIDR__ tcp dport { __ICAP_PORT__, __HEALTH_PORT__ } accept
+
+        counter log prefix "[pathb-icap drop] " level info limit rate 5/second drop
+    }
+
+    chain forward {
+        type filter hook forward priority 0;
+        policy drop;
+    }
+
+    chain output {
+        type filter hook output priority 0;
+        policy accept;
+    }
+}

@@ -1,0 +1,97 @@
+# Path-B v5.12 — Suricata for ICAP-gespeiste HTTP-cleartextanalyse
+# Compatible with Suricata 7.x on Ubuntu 24.04 LTS.
+%YAML 1.1
+---
+
+default-log-dir: /var/log/suricata-icap
+default-rule-path: /etc/suricata-icap/rules
+
+vars:
+  address-groups:
+    HOME_NET: "[10.0.0.0/8,172.16.0.0/12,192.168.0.0/16]"
+    EXTERNAL_NET: "!$HOME_NET"
+    HTTP_SERVERS: "any"
+  port-groups:
+    HTTP_PORTS: "[80,8080,8000,3128]"
+
+rule-files:
+  - icap-cleartext.rules
+
+classification-file: /etc/suricata/classification.config
+reference-config-file: /etc/suricata/reference.config
+threshold-file: /etc/suricata-icap/threshold.config
+
+outputs:
+  - eve-log:
+      enabled: yes
+      filetype: regular
+      filename: eve.json
+      filemode: 660
+      community-id: yes
+      community-id-seed: 0
+      pcap-file: false
+      types:
+        - alert:
+            metadata: yes
+            payload: no
+            packet: no
+            tagged-packets: no
+  - fast:
+      enabled: yes
+      filename: fast.log
+
+logging:
+  default-log-level: notice
+  outputs:
+    - console:
+        enabled: no
+    - file:
+        enabled: yes
+        filename: suricata.log
+        level: notice
+
+app-layer:
+  protocols:
+    http:
+      enabled: yes
+      libhtp:
+        default-config:
+          personality: IDS
+          request-body-limit: 2mb
+          response-body-limit: 4mb
+          request-body-inspect-window: 256kb
+          response-body-inspect-window: 1mb
+          response-body-minimal-inspect-size: 1
+          response-body-decompress-layer-limit: 2
+    tls:
+      enabled: no
+
+stream:
+  memcap: 256mb
+  checksum-validation: no
+  inline: no
+  reassembly:
+    memcap: 256mb
+    depth: 8mb
+
+flow:
+  memcap: 128mb
+  hash-size: 65536
+  prealloc: 10000
+
+defrag:
+  memcap: 32mb
+  hash-size: 65536
+  prealloc: yes
+  timeout: 60
+
+runmode: autofp
+threading:
+  set-cpu-affinity: no
+
+unix-command:
+  enabled: yes
+  filename: /run/suricata-icap/suricata-cmd.socket
+
+pcap-file:
+  checksum-checks: no

@@ -1,0 +1,33 @@
+[Unit]
+Description=Path-B v5.12 External ICAP Server with Suricata verdict backend
+After=network-online.target icap-suricata-engine.service
+Wants=network-online.target
+Requires=icap-suricata-engine.service
+
+[Service]
+Type=simple
+User=icap-suricata
+Group=icap-suricata
+SupplementaryGroups=suricata adm
+EnvironmentFile=/etc/icap-suricata/icap-server.env
+UMask=0007
+RuntimeDirectory=icap-suricata
+RuntimeDirectoryMode=2770
+LogsDirectory=icap-suricata
+LogsDirectoryMode=0750
+ExecStartPre=+/bin/mkdir -p /run/icap-suricata/pcaps /var/log/icap-suricata
+ExecStartPre=+/bin/chown -R icap-suricata:icap-suricata /run/icap-suricata /var/log/icap-suricata
+ExecStartPre=+/bin/chmod -R 2770 /run/icap-suricata
+ExecStart=/usr/bin/python3 /usr/local/lib/icap-suricata/icap_suricata_server.py
+Restart=always
+RestartSec=3
+LimitNOFILE=65536
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+ReadWritePaths=/run/icap-suricata /var/log/icap-suricata /var/log/suricata-icap
+CapabilityBoundingSet=
+
+[Install]
+WantedBy=multi-user.target

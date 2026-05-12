@@ -1,0 +1,27 @@
+# Path-B v5.12 — local ICAP/Suricata cleartext rules
+# SID range 9100500-9100999 is treated as block policy by the ICAP server by default.
+# Monitor/audit rules are intentionally outside this range.
+# Fokus v5.12: stabile Browser-Tests, wenig False Positives, klare Test-Blocker.
+
+alert http any any -> any any (msg:"PROXYLAB-ICAP TEST request header trigger"; flow:established,to_server; http.request_header; content:"X-Proxylab-Test|3A|"; nocase; content:"icap-suricata-trigger"; nocase; classtype:bad-unknown; metadata:proxylab_policy block, proxylab_path path_b_icap, direction outbound_or_inbound; sid:9100599; rev:8;)
+
+# Raw TCP payload is more robust for the RESPMOD smoke test than http.response_body,
+# because we generate synthetic PCAPs from ICAP objects and depending on the response
+# Header/Body-Kombination not jede Suricata/libhtp-Version den Body gleich buffert.
+alert tcp any any -> any any (msg:"PROXYLAB-ICAP TEST response body trigger"; flow:established,to_client; content:"PROXYLAB-ICAP-RESPONSE-TRIGGER"; classtype:bad-unknown; metadata:proxylab_policy block, proxylab_path path_b_icap, direction response; sid:9100598; rev:8;)
+
+alert http any any -> any any (msg:"PROXYLAB-ICAP CobaltStrike default User-Agent"; flow:established,to_server; http.user_agent; content:"Mozilla/5.0"; startswith; content:"MSIE 10.0"; distance:0; within:80; content:"Windows NT 6.1"; distance:0; within:80; classtype:trojan-activity; reference:url,attack.mitre.org/software/S0154/; metadata:proxylab_policy block, mitre_attack T1071.001; sid:9100500; rev:8;)
+
+# v5.12: The previous generic /cm/ CobaltStrike rule was removed from the block range
+# removed because normal websites may use legitimate /cm/ paths.
+alert http any any -> any any (msg:"PROXYLAB-ICAP MONITOR possible CobaltStrike /cm/ URI"; flow:established,to_server; http.uri; content:"/cm/"; classtype:trojan-activity; metadata:proxylab_policy monitor, mitre_attack T1071.001; sid:9101501; rev:8;)
+
+alert http any any -> any any (msg:"PROXYLAB-ICAP Empire PowerShell tasking URI"; flow:established,to_server; http.method; content:"POST"; http.uri; content:"/admin/get.php"; classtype:trojan-activity; metadata:proxylab_policy block, mitre_attack T1059.001; sid:9100510; rev:8;)
+
+alert http any any -> any any (msg:"PROXYLAB-ICAP Empire base64 PowerShell payload"; flow:established,to_server; http.request_body; content:"powershell"; nocase; content:"-EncodedCommand"; nocase; classtype:trojan-activity; metadata:proxylab_policy block, mitre_attack T1059.001; sid:9100511; rev:8;)
+
+alert http any any -> any any (msg:"PROXYLAB-ICAP xmrig User-Agent"; flow:established,to_server; http.user_agent; content:"XMRig/"; classtype:bad-unknown; metadata:proxylab_policy block, mitre_attack T1496; sid:9100520; rev:8;)
+
+alert http any any -> any any (msg:"PROXYLAB-ICAP explicit monitor marker"; flow:established,to_server; http.request_header; content:"X-Proxylab-Monitor|3A|"; nocase; content:"icap-audit"; nocase; classtype:bad-unknown; metadata:proxylab_policy monitor, proxylab_fp_prone no; sid:9101530; rev:8;)
+
+alert tcp any any -> any any (msg:"PROXYLAB-ICAP EICAR string in HTTP response"; flow:established,to_client; content:"EICAR-STANDARD-ANTIVIRUS-TEST-FILE"; classtype:trojan-activity; metadata:proxylab_policy block, direction response; sid:9100600; rev:8;)

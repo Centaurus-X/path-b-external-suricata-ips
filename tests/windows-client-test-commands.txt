@@ -1,0 +1,29 @@
+Path-B v5.12 Windows Testbefehle
+
+Important:
+Do not use only the source folder client-tools\windows.
+Copy the generated kit from the proxy VM:
+  ~/path-b-external-suricata-ips/certs/proxy/pathb-windows-client-kit.zip
+
+Im entpackten folder windows-client-kit:
+
+1) CA importieren:
+  powershell -ExecutionPolicy Bypass -File .\Install-PathB-CA.ps1
+
+2) Start the isolated browser test without affecting global Windows proxy settings or RustDesk:
+  powershell -ExecutionPolicy Bypass -File .\Start-PathB-Browser-Test.ps1
+
+3) Curl-smoke test:
+  powershell -ExecutionPolicy Bypass -File .\Test-PathB-Proxy.ps1
+
+4) Manuell:
+  curl.exe -i -x http://10.10.10.20:3128 -H "X-Proxylab-Test: icap-suricata-trigger" http://example.com/
+  curl.exe -k --ssl-no-revoke -I -x http://10.10.10.20:3128 https://example.com/
+  curl.exe --ssl-no-revoke -I -x http://10.10.10.20:3128 https://example.com/
+
+Expected block test result:
+  HTTP/1.1 403 Forbidden
+  X-Blocked-By: Proxylab-PathB-ICAP-Suricata
+
+If only HTTPS without -k fails:
+  CA is not imported into the Windows CurrentUser Root store yet.

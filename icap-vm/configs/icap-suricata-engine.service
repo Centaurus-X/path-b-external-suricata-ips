@@ -1,0 +1,44 @@
+[Unit]
+Description=Path-B v5.12 Suricata Engine for ICAP-fed cleartext HTTP
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists=/etc/suricata-icap/suricata-icap.yaml
+
+[Service]
+Type=simple
+User=suricata
+Group=suricata
+SupplementaryGroups=icap-suricata
+UMask=0007
+RuntimeDirectory=suricata-icap
+RuntimeDirectoryMode=2770
+StateDirectory=suricata-icap
+StateDirectoryMode=0750
+LogsDirectory=suricata-icap
+LogsDirectoryMode=0750
+PIDFile=/run/suricata-icap/suricata-icap.pid
+ExecStartPre=+/bin/mkdir -p /run/suricata-icap /run/icap-suricata/pcaps /var/log/suricata-icap /var/lib/suricata-icap
+ExecStartPre=+/bin/rm -f /run/suricata-icap/suricata-cmd.socket /run/suricata-icap/suricata-icap.pid
+ExecStartPre=+/bin/chown -R suricata:icap-suricata /run/suricata-icap
+ExecStartPre=+/bin/chown -R icap-suricata:icap-suricata /run/icap-suricata
+ExecStartPre=+/bin/chown -R suricata:suricata /var/log/suricata-icap /var/lib/suricata-icap
+ExecStartPre=+/bin/chmod 2770 /run/suricata-icap /run/icap-suricata /run/icap-suricata/pcaps
+ExecStart=/usr/bin/suricata -c /etc/suricata-icap/suricata-icap.yaml --pidfile /run/suricata-icap/suricata-icap.pid --unix-socket=/run/suricata-icap/suricata-cmd.socket
+ExecReload=/usr/bin/suricatasc -c reload-rules /run/suricata-icap/suricata-cmd.socket
+KillMode=process
+KillSignal=SIGTERM
+TimeoutStartSec=60
+TimeoutStopSec=30
+Restart=on-failure
+RestartSec=5
+LimitNOFILE=65536
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+ReadWritePaths=/run/suricata-icap /run/icap-suricata /var/log/suricata-icap /var/lib/suricata-icap
+CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_RAW CAP_SYS_NICE CAP_IPC_LOCK
+AmbientCapabilities=CAP_NET_ADMIN CAP_NET_RAW CAP_SYS_NICE CAP_IPC_LOCK
+
+[Install]
+WantedBy=multi-user.target

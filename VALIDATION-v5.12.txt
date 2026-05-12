@@ -1,0 +1,27 @@
+Path-B v5.12 Public Edition Validation
+=======================================
+
+Build-time checks performed:
+
+PASS bash -n for all shell scripts
+PASS python3 -m py_compile for ICAP and test Python code
+PASS YAML parse for GitHub Actions and issue templates
+PASS JSON parse
+PASS no Python classes, decorators, or lambdas in icap-vm/src
+PASS ICAP Preview parser simulation
+PASS REQMOD static-bypass simulation
+PASS RESPMOD EICAR policy simulation
+PASS PCAP builder simulation with 1 MiB response
+PASS generated deployment.env through scripts/init-config.sh
+PASS ZIP integrity checked with unzip -t
+
+Runtime validation on VMs:
+
+sudo bash scripts/install.sh --role icap --config deployment.env
+sudo bash scripts/verify.sh --role icap --config deployment.env
+sudo bash scripts/install.sh --role proxy --config deployment.env
+sudo bash scripts/verify.sh --role proxy --config deployment.env --curl-test
+
+Useful metrics:
+
+curl -s http://<ICAP_VM_IP>:2345/metrics | egrep 'reqmod_bypassed|pcap_build|submit_ms|queue_wait|eve_wait|errors|fail_open|blocked'
