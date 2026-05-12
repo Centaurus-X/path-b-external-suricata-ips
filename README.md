@@ -8,6 +8,10 @@ Path-B is a lab-only SSL inspection research system for testing **Squid SSL-Bump
 Client -> Squid SSL-Bump -> ICAP REQMOD/RESPMOD -> Path-B ICAP Server -> Suricata -> Allow/Block -> Squid -> Client
 ```
 
+![Path-B v5.12 architecture](docs/assets/system-architecture-pathb-v512.svg)
+
+
+
 ## License and use limits
 
 Path-B is released under the **Path-B Community Lab License v1.0**. Free private and non-commercial lab testing is allowed. Commercial, enterprise, production, managed-service, redistribution, sublicensing, publication of modified versions, and derivative works require prior written permission or a commercial license.
