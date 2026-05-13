@@ -2,6 +2,10 @@
 
 **Community Lab Preview — source-available, not open source, not production-ready.**
 
+![Path-B v5.12 architecture](docs/assets/Screenshot%202026-05-13%20042720.png)
+
+
+
 Path-B is a lab-only SSL inspection research system for testing **Squid SSL-Bump**, an **external ICAP server**, and **Suricata-based allow/block decisions** on Squid-decrypted HTTP request and response data.
 
 ```text
